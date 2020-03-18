@@ -1,0 +1,26 @@
+{
+  "name": "campus-voting-system",
+  "version": "1.0.0",
+  "description": "Voting system powered by Ethereum.",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "start": "lite-server"
+  },
+  "author": "Stephen Mwangi, Credits to gregory@dappuniversity.com",
+  "license": "ISC",
+  "devDependencies": {
+    "bootstrap": "^4.4.1",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
+    "chai-bignumber": "^2.0.2",
+    "lite-server": "^2.5.4",
+    "nodemon": "^1.17.3",
+    "truffle": "5.0.2",
+    "truffle-contract": "3.0.6"
+  },
+  "dependencies": {},
+  "keywords": []
+}
