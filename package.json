@@ -19,7 +19,7 @@
     "lite-server": "^2.5.4",
     "nodemon": "^2.0.2",
     "truffle": "5.1.18",
-    "truffle-contract": "3.0.6"
+    "truffle-contract": "4.0.31"
   },
   "dependencies": {},
   "keywords": []
