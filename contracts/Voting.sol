@@ -22,7 +22,7 @@ contract Voting {
     }
 
     struct Aspirant {
-        address aspirantId;
+        uint aspirantId;
         string name;
         uint addedAt;
         uint updatedAt;
@@ -31,9 +31,9 @@ contract Voting {
     struct Team {
         uint teamId;
         string name;
-        address chairmanId;
-        address secGenId;
-        address treasurerId;
+        uint chairmanId;
+        uint secGenId;
+        uint treasurerId;
         uint votes;
         uint addedAt;
         uint updatedAt;
@@ -41,14 +41,14 @@ contract Voting {
 
     struct Ballot {
         uint teamId;
-        bytes32 votingToken;
+        bytes32 votingToken; // a hash of the actual voting token
         bool cast;
         uint addedAt;
         uint updatedAt;
     }
 
     mapping(uint => Election) public elections;
-    mapping(address => Aspirant) public aspirants;
+    mapping(uint => Aspirant) public aspirants;
 
     event Cast(uint _electionId, uint _teamId, uint teamCount, uint totalCount, uint castAt);
     event ElectionEnded(uint _electionId, uint _winningTeamId);
@@ -75,8 +75,8 @@ contract Voting {
 
     function setElection(uint _electionId, string memory _name, uint _start_timestamp, uint _end_timestamp)
     public
-    notZero(_electionId)
     onlyCreator()
+    notZero(_electionId)
     {
         uint time = now;
         if (elections[_electionId].electionId == _electionId) {
@@ -93,21 +93,22 @@ contract Voting {
     }
 
 
-    function setAspirant(address _aspirantAddress, string memory _name)
+    function setAspirant(uint _aspirantId, string memory _name)
     public
     onlyCreator()
+    notZero(_aspirantId)
     {
         uint time = now;
-        if (aspirants[_aspirantAddress].aspirantId == _aspirantAddress) {
-            aspirants[_aspirantAddress].name = _name;
-            aspirants[_aspirantAddress].updatedAt = time;
+        if (aspirants[_aspirantId].aspirantId == _aspirantId) {
+            aspirants[_aspirantId].name = _name;
+            aspirants[_aspirantId].updatedAt = time;
         } else {
-            aspirants[_aspirantAddress] = Aspirant(_aspirantAddress, _name, time, time);
+            aspirants[_aspirantId] = Aspirant(_aspirantId, _name, time, time);
             aspirantCount++;
         }
     }
 
-    function setTeam(uint _electionId, uint _teamId, string memory _name, address _chairmanId, address _secGenId, address _treasurerId)
+    function setTeam(uint _electionId, uint _teamId, string memory _name, uint _chairmanId, uint _secGenId, uint _treasurerId)
     public
     onlyCreator()
     notZero(_electionId)
@@ -201,7 +202,7 @@ contract Voting {
 
     function getTeam(uint _electionId, uint _teamId)
     public
-    view returns (uint teamId, string memory name, address chairmanId, address secGenId, address treasurerId, uint votes, uint addedAt, uint updatedAt)
+    view returns (uint teamId, string memory name, uint chairmanId, uint secGenId, uint treasurerId, uint votes, uint addedAt, uint updatedAt)
     {
         Team memory t = elections[_electionId].teams[_teamId];
         return (t.teamId, t.name, t.chairmanId, t.secGenId, t.treasurerId, t.votes, t.addedAt, t.updatedAt);
