@@ -201,17 +201,24 @@ contract Voting {
 
     function getTeam(uint _electionId, uint _teamId)
     public
+    notZero(_electionId)
+    electionExists(_electionId)
     view returns (uint teamId, string memory name, uint chairmanId, uint secGenId, uint treasurerId, uint votes, uint addedAt, uint updatedAt)
     {
+        require(elections[_electionId].teams[_teamId].teamId == _teamId, "Team does not exist.");
         Team memory t = elections[_electionId].teams[_teamId];
         return (t.teamId, t.name, t.chairmanId, t.secGenId, t.treasurerId, t.votes, t.addedAt, t.updatedAt);
     }
 
     function getBallot(uint _electionId, string memory _token)
     public
+    notZero(_electionId)
+    electionExists(_electionId)
     view returns (uint teamId, bytes32 votingToken, bool voted, uint addedAt, uint updatedAt)
     {
-        Ballot memory b = elections[_electionId].votingTokens[keccak256(abi.encode(_token))];
+        bytes32 _hashedToken = keccak256(abi.encode(_token));
+        require(elections[_electionId].votingTokens[_hashedToken].votingToken == _hashedToken, "Voting Token does not exist.");
+        Ballot memory b = elections[_electionId].votingTokens[_hashedToken];
         return (b.teamId, b.votingToken, b.cast, b.addedAt, b.updatedAt);
     }
 }
