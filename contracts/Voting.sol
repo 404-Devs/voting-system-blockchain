@@ -92,7 +92,6 @@ contract Voting {
         }
     }
 
-
     function setAspirant(uint _aspirantId, string memory _name)
     public
     onlyCreator()
@@ -172,7 +171,19 @@ contract Voting {
         emit Cast(_electionId, _teamId, elections[_electionId].teams[_teamId].votes,  elections[_electionId].voteCount, time);
     }
 
-    function winner(uint _electionId)
+    function endElection(uint _electionId)
+    public
+    onlyCreator()
+    notZero(_electionId)
+    electionExists(_electionId)
+    {
+        require(now > elections[_electionId].end_timestamp, "Election not over.");
+        require(!elections[_electionId].ended, "endElection has already been called.");
+        elections[_electionId].ended = true;
+        emit ElectionEnded(_electionId, getWinner(_electionId));
+    }
+
+    function getWinner(uint _electionId)
     public
     notZero(_electionId)
     electionExists(_electionId)
@@ -186,18 +197,6 @@ contract Voting {
                 _winningTeamId = _teamId;
             }
         }
-    }
-
-    function endElection(uint _electionId)
-    public
-    onlyCreator()
-    notZero(_electionId)
-    electionExists(_electionId)
-    {
-        require(now > elections[_electionId].end_timestamp, "Election not over.");
-        require(!elections[_electionId].ended, "endElection has already been called.");
-        elections[_electionId].ended = true;
-        emit ElectionEnded(_electionId, winner(_electionId));
     }
 
     function getTeam(uint _electionId, uint _teamId)
