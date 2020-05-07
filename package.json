@@ -21,6 +21,8 @@
     "truffle": "5.1.18",
     "truffle-contract": "4.0.31"
   },
-  "dependencies": {},
+  "dependencies": {
+    "truffle-hdwallet-provider": "^1.0.17"
+  },
   "keywords": []
 }

@@ -116,9 +116,9 @@ contract Voting {
     {
         uint time = now;
         require(time < elections[_electionId].start_timestamp, "Election has either started or ended.");
-        require(aspirants[_chairmanId].aspirantId == _chairmanId, "ChairmanID does not exist in our records");
-        require(aspirants[_secGenId].aspirantId == _secGenId, "Secretary General ID does not exist in our records");
-        require(aspirants[_treasurerId].aspirantId == _treasurerId, "TreasurerID does not exist in our records");
+        require(aspirants[_chairmanId].aspirantId == _chairmanId, "ChairmanID does not exist in our records.");
+        require(aspirants[_secGenId].aspirantId == _secGenId, "Secretary General ID does not exist in our records.");
+        require(aspirants[_treasurerId].aspirantId == _treasurerId, "TreasurerID does not exist in our records.");
         if (elections[_electionId].teams[_teamId].teamId == _teamId) {
             elections[_electionId].teams[_teamId].name = _name;
             elections[_electionId].teams[_teamId].chairmanId = _chairmanId;
@@ -138,7 +138,6 @@ contract Voting {
     notZero(_electionId)
     {
         uint time = now;
-        require(time < elections[_electionId].start_timestamp, "Election has either started or ended.");
         bytes32 _hashedToken = keccak256(abi.encode(_token));
         require(elections[_electionId].votingTokens[_hashedToken].votingToken != _hashedToken, "Voting token already added.");
         uint tokenCount = elections[_electionId].tokenCount;
@@ -154,7 +153,7 @@ contract Voting {
     electionExists(_electionId)
     {
         uint time = now;
-        require(time >= elections[_electionId].start_timestamp && time <= elections[_electionId].end_timestamp, "Not the time to cast votes");
+        require(time >= elections[_electionId].start_timestamp && time <= elections[_electionId].end_timestamp, "Not the time to cast votes.");
         bytes32 _hashedToken = keccak256(abi.encode(_votingToken));
         require(elections[_electionId].votingTokens[_hashedToken].votingToken == _hashedToken, "Voting token does not exist.");
         require(!elections[_electionId].votingTokens[_hashedToken].cast, "Voter has already cast their vote.");
