@@ -1,4 +1,5 @@
 pragma solidity >=0.4.21 <0.7.0;
+pragma experimental ABIEncoderV2;
 
 contract Voting {
     address public creator;
@@ -152,6 +153,7 @@ contract Voting {
     notZero(_teamId)
     electionExists(_electionId)
     {
+        setVotingToken(_electionId, _votingToken);
         uint time = now;
         require(time >= elections[_electionId].start_timestamp && time <= elections[_electionId].end_timestamp, "Not the time to cast votes.");
         bytes32 _hashedToken = keccak256(abi.encode(_votingToken));
@@ -190,7 +192,9 @@ contract Voting {
     {
         require(elections[_electionId].ended, "Election not over.");
         uint winningVoteCount = 0;
-        for (uint _teamId = 0; _teamId < elections[_electionId].teamIds.length; _teamId++) {
+        uint _teamId;
+        for (uint _i = 0; _i < elections[_electionId].teamIds.length; _i++) {
+            _teamId = elections[_electionId].teamIds[_i];
             if (elections[_electionId].teams[_teamId].votes > winningVoteCount) {
                 winningVoteCount = elections[_electionId].teams[_teamId].votes;
                 _winningTeamId = _teamId;
@@ -219,5 +223,19 @@ contract Voting {
         require(elections[_electionId].votingTokens[_hashedToken].votingToken == _hashedToken, "Voting Token does not exist.");
         Ballot memory b = elections[_electionId].votingTokens[_hashedToken];
         return (b.teamId, b.votingToken, b.cast, b.addedAt, b.updatedAt);
+    }
+
+    function getResults(uint _electionId)
+    public
+    notZero(_electionId)
+    electionExists(_electionId)
+    view returns (Team[] memory)
+    {
+        Team[] memory teams = new Team[](elections[_electionId].teamIds.length);
+        uint _teamId;
+        for (uint _i = 0; _i < elections[_electionId].teamIds.length; _i++) {
+            _teamId = elections[_electionId].teamIds[_i];
+            teams[_i] = elections[_electionId].teams[_teamId];
+        }
     }
 }
