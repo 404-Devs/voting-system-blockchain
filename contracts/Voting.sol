@@ -3,68 +3,60 @@ pragma experimental ABIEncoderV2;
 
 contract Voting {
     address public creator;
-    uint public electionCount = 0;
-    uint public aspirantCount = 0;
+    uint32 public electionCount = 0;
+    uint32 public aspirantCount = 0;
 
     struct Election {
-        uint electionId;
+        uint32 electionId;
         string name;
-        uint start_timestamp;
-        uint end_timestamp;
-        uint voteCount;
-        uint teamCount;
-        uint tokenCount;
+        uint32 start_timestamp;
+        uint32 end_timestamp;
+        uint32 voteCount;
+        uint32 teamCount;
+        uint32 tokenCount;
         bool ended;
-        uint addedAt;
-        uint updatedAt;
-        uint[] teamIds; // apparently, you can't loop over mappings or their keys
-        mapping(uint => Team) teams;
+        uint32[] teamIds; // apparently, you can't loop over mappings or their keys
+        mapping(uint32 => Team) teams;
         mapping(bytes32 => Ballot) votingTokens;
     }
 
     struct Aspirant {
-        uint aspirantId;
+        uint32 aspirantId;
         string name;
-        uint addedAt;
-        uint updatedAt;
     }
 
     struct Team {
-        uint teamId;
+        uint32 teamId;
         string name;
-        uint chairmanId;
-        uint secGenId;
-        uint treasurerId;
-        uint votes;
-        uint addedAt;
-        uint updatedAt;
+        uint32 chairmanId;
+        uint32 secGenId;
+        uint32 treasurerId;
+        uint32 votes;
     }
 
     struct Ballot {
-        uint teamId;
+        uint32 teamId;
         bytes32 votingToken; // a hash of the actual voting token
         bool cast;
-        uint addedAt;
-        uint updatedAt;
     }
 
-    mapping(uint => Election) public elections;
-    mapping(uint => Aspirant) public aspirants;
+    mapping(uint32 => Election) public elections;
+    mapping(uint32 => Aspirant) public aspirants;
 
-    event Cast(uint _electionId, uint _teamId, uint teamCount, uint totalCount, uint castAt);
-    event ElectionEnded(uint _electionId, uint _winningTeamId);
+    event Cast(uint32 _electionId, uint32 _teamId, uint32 teamCount, uint32 totalCount, uint castAt);
+    event ElectionEnded(uint32 _electionId, uint32 _winningTeamId);
 
     modifier onlyCreator() {
         require(msg.sender == creator, "Only the Creator can call this.");
         _;
     }
 
-    modifier notZero(uint _n) {
+    modifier notZero(uint32 _n) {
         require(_n != 0, "IDs should not equal zero.");
         _;
     }
 
-    modifier electionExists(uint _electionId) {
+    modifier electionExists(uint32 _electionId) {
         require(elections[_electionId].electionId == _electionId, "Election does not exist.");
         _;
     }
@@ -74,7 +66,7 @@ contract Voting {
         creator = msg.sender;
     }
 
-    function setElection(uint _electionId, string memory _name, uint _start_timestamp, uint _end_timestamp)
+    function setElection(uint32 _electionId, string memory _name, uint32 _start_timestamp, uint32 _end_timestamp)
     public
     onlyCreator()
     notZero(_electionId)
@@ -85,30 +77,27 @@ contract Voting {
             elections[_electionId].name = _name;
             elections[_electionId].start_timestamp = _start_timestamp;
             elections[_electionId].end_timestamp = _end_timestamp;
-            elections[_electionId].updatedAt = time;
         } else {
-            uint[] memory teamIds;
-            elections[_electionId] = Election(_electionId, _name, _start_timestamp, _end_timestamp, 0, 0, 0, false, time, time, teamIds);
+            uint32[] memory teamIds;
+            elections[_electionId] = Election(_electionId, _name, _start_timestamp, _end_timestamp, 0, 0, 0, false, teamIds);
             electionCount++;
         }
     }
 
-    function setAspirant(uint _aspirantId, string memory _name)
+    function setAspirant(uint32 _aspirantId, string memory _name)
     public
     onlyCreator()
     notZero(_aspirantId)
     {
-        uint time = now;
         if (aspirants[_aspirantId].aspirantId == _aspirantId) {
             aspirants[_aspirantId].name = _name;
-            aspirants[_aspirantId].updatedAt = time;
         } else {
-            aspirants[_aspirantId] = Aspirant(_aspirantId, _name, time, time);
+            aspirants[_aspirantId] = Aspirant(_aspirantId, _name);
             aspirantCount++;
         }
     }
 
-    function setTeam(uint _electionId, uint _teamId, string memory _name, uint _chairmanId, uint _secGenId, uint _treasurerId)
+    function setTeam(uint32 _electionId, uint32 _teamId, string memory _name, uint32 _chairmanId, uint32 _secGenId, uint32 _treasurerId)
     public
     onlyCreator()
     notZero(_electionId)
@@ -125,29 +114,26 @@ contract Voting {
             elections[_electionId].teams[_teamId].chairmanId = _chairmanId;
             elections[_electionId].teams[_teamId].secGenId = _secGenId;
             elections[_electionId].teams[_teamId].treasurerId = _treasurerId;
-            elections[_electionId].teams[_teamId].updatedAt = time;
         } else {
             elections[_electionId].teamIds.push(_teamId);
-            elections[_electionId].teams[_teamId] = Team(_teamId, _name, _chairmanId, _secGenId, _treasurerId, 0, time, time);
+            elections[_electionId].teams[_teamId] = Team(_teamId, _name, _chairmanId, _secGenId, _treasurerId, 0);
             elections[_electionId].teamCount++;
         }
     }
 
-    function setVotingToken(uint _electionId, string memory _token)
+    function setVotingToken(uint32 _electionId, string memory _token)
     public
     onlyCreator()
     notZero(_electionId)
     {
-        uint time = now;
         bytes32 _hashedToken = keccak256(abi.encode(_token));
         require(elections[_electionId].votingTokens[_hashedToken].votingToken != _hashedToken, "Voting token already added.");
-        uint tokenCount = elections[_electionId].tokenCount;
-        elections[_electionId].votingTokens[_hashedToken] = Ballot(tokenCount, _hashedToken, false, time, time);
+        uint32 tokenCount = elections[_electionId].tokenCount;
+        elections[_electionId].votingTokens[_hashedToken] = Ballot(tokenCount, _hashedToken, false);
         elections[_electionId].tokenCount++;
-        elections[_electionId].updatedAt = time;
     }
 
-    function cast(uint _electionId, uint _teamId, string memory _votingToken)
+    function cast(uint32 _electionId, uint32 _teamId, string memory _votingToken)
     public
     notZero(_electionId)
     notZero(_teamId)
@@ -164,15 +150,12 @@ contract Voting {
         // register the vote
         elections[_electionId].votingTokens[_hashedToken].teamId = _teamId;
         elections[_electionId].votingTokens[_hashedToken].cast = true;
-        elections[_electionId].votingTokens[_hashedToken].updatedAt = time;
         elections[_electionId].teams[_teamId].votes++;
-        elections[_electionId].teams[_teamId].updatedAt = time;
         elections[_electionId].voteCount++;
-        elections[_electionId].updatedAt = time;
         emit Cast(_electionId, _teamId, elections[_electionId].teams[_teamId].votes,  elections[_electionId].voteCount, time);
     }
 
-    function endElection(uint _electionId)
+    function endElection(uint32 _electionId)
     public
     onlyCreator()
     notZero(_electionId)
@@ -184,16 +167,16 @@ contract Voting {
         emit ElectionEnded(_electionId, getWinner(_electionId));
     }
 
-    function getWinner(uint _electionId)
+    function getWinner(uint32 _electionId)
     public
     notZero(_electionId)
     electionExists(_electionId)
-    view returns (uint _winningTeamId)
+    view returns (uint32 _winningTeamId)
     {
         require(elections[_electionId].ended, "Election not over.");
-        uint winningVoteCount = 0;
-        uint _teamId;
-        for (uint _i = 0; _i < elections[_electionId].teamIds.length; _i++) {
+        uint32 winningVoteCount = 0;
+        uint32 _teamId;
+        for (uint32 _i = 0; _i < elections[_electionId].teamIds.length; _i++) {
             _teamId = elections[_electionId].teamIds[_i];
             if (elections[_electionId].teams[_teamId].votes > winningVoteCount) {
                 winningVoteCount = elections[_electionId].teams[_teamId].votes;
@@ -202,40 +185,41 @@ contract Voting {
         }
     }
 
-    function getTeam(uint _electionId, uint _teamId)
+    function getTeam(uint32 _electionId, uint32 _teamId)
     public
     notZero(_electionId)
     electionExists(_electionId)
-    view returns (uint teamId, string memory name, uint chairmanId, uint secGenId, uint treasurerId, uint votes, uint addedAt, uint updatedAt)
+    view returns (uint32 teamId, string memory name, uint32 chairmanId, uint32 secGenId, uint32 treasurerId, uint32 votes)
     {
         require(elections[_electionId].teams[_teamId].teamId == _teamId, "Team does not exist.");
         Team memory t = elections[_electionId].teams[_teamId];
-        return (t.teamId, t.name, t.chairmanId, t.secGenId, t.treasurerId, t.votes, t.addedAt, t.updatedAt);
+        return (t.teamId, t.name, t.chairmanId, t.secGenId, t.treasurerId, t.votes);
     }
 
-    function getBallot(uint _electionId, string memory _token)
+    function getBallot(uint32 _electionId, string memory _token)
     public
     notZero(_electionId)
     electionExists(_electionId)
-    view returns (uint teamId, bytes32 votingToken, bool voted, uint addedAt, uint updatedAt)
+    view returns (uint32 teamId, bytes32 votingToken, bool voted)
     {
         bytes32 _hashedToken = keccak256(abi.encode(_token));
         require(elections[_electionId].votingTokens[_hashedToken].votingToken == _hashedToken, "Voting Token does not exist.");
         Ballot memory b = elections[_electionId].votingTokens[_hashedToken];
-        return (b.teamId, b.votingToken, b.cast, b.addedAt, b.updatedAt);
+        return (b.teamId, b.votingToken, b.cast);
     }
 
-    function getResults(uint _electionId)
+    function getResults(uint32 _electionId)
     public
     notZero(_electionId)
     electionExists(_electionId)
     view returns (Team[] memory)
     {
         Team[] memory teams = new Team[](elections[_electionId].teamIds.length);
-        uint _teamId;
-        for (uint _i = 0; _i < elections[_electionId].teamIds.length; _i++) {
+        uint32 _teamId;
+        for (uint32 _i = 0; _i < elections[_electionId].teamIds.length; _i++) {
             _teamId = elections[_electionId].teamIds[_i];
             teams[_i] = elections[_electionId].teams[_teamId];
         }
+        return teams;
     }
 }
